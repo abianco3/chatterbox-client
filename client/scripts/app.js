@@ -14,6 +14,7 @@ app.send = function(message) {
     data: JSON.stringify(message),
     contentType: 'application/json',
     success: function(data) {
+      app.renderMessage(message);
       console.log('send worked', data);
     },
     error: function(data) {
@@ -22,15 +23,17 @@ app.send = function(message) {
   });
 };
 
-app.fetch = function() {
+app.fetch = function(params) {
   $.ajax({
     url: 'http://parse.sfm8.hackreactor.com/chatterbox/classes/messages',
     type: 'GET',
     contentType: 'application/json',
+    data: params,
     success: (data) => {
       console.log('fetch worked', data);
       data.results.forEach((message, index) => {
         this.renderMessage(message);
+
       });
     },
     error: function(data) {
@@ -47,8 +50,11 @@ app.renderMessage = function(message) {
   // var newUsername = '<div class="chat username">' + message.username + '</div>';
   // var newMessage = '<div class="chat">' + newUsername + message.text + '</div>';
   var $tweet = $('<div class="chat"></div>');
-  var $username = $('<h4 class="username">' + message.username + '</h4>');
-  var $text = $('<p>' + message.text + '</p>');
+  var $username = $('<h4 class="username"></h4>');
+  $username.append(document.createTextNode(message.username));
+  $username.addClass(message.username);
+  var $text = $('<p></p>');
+  $text.append(document.createTextNode(message.text));
   $tweet.append($username);
   $tweet.append($text);
   $('#chats').prepend($tweet);
@@ -60,18 +66,33 @@ app.renderRoom = function(roomName) {
 };
 
 app.handleUsernameClick = function() {
-  $(this).addClass('friend');
+  // var $class = $(this).attr('class');
+  // console.log($class);
+  // //$(this).addClass('friend');
+  // $('.' + $class).addClass('friend');
+
+  var grabClasses = $(this).attr('class');
+  var split = grabClasses.split(' ');
+  var name = '.' + split[1];
+  $(name).addClass('friend');
+
 };
 
 app.handleSubmit = function(event) {
-  event.preventDefault();
   var message = {};
-  message.text = $('#message').val;
-  message.roomname = $('#roomSelect').val;
+  message.username = window.username;
+  message.text = $('#message').val();
+  message.roomname = $('#roomSelect').val();
+  console.log(message);
   this.send(message);
+  return false;
 };
 
 document.addEventListener('DOMContentLoaded', function() {
-  $('.submit').on('submit', app.handleSubmit.bind(app));
-});
+  $('.submit').on('click', this.handleSubmit.bind(this));
+  this.fetch({order: '-createdAt'});
+  var urlParams = window.location.search.split('=');
+  window.username = urlParams[urlParams.length - 1];
+  console.log(username);
+}.bind(app));
 
