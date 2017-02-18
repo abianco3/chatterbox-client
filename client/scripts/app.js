@@ -14,7 +14,7 @@ app.send = function(message) {
     data: JSON.stringify(message),
     contentType: 'application/json',
     success: function(data) {
-      console.log(data);
+      console.log('send worked', data);
     },
     error: function(data) {
       console.error('message failed?', data);
@@ -22,14 +22,16 @@ app.send = function(message) {
   });
 };
 
-app.fetch = function(callback) {
+app.fetch = function() {
   $.ajax({
     url: 'http://parse.sfm8.hackreactor.com/chatterbox/classes/messages',
     type: 'GET',
-    data: JSON.stringify(message),
     contentType: 'application/json',
-    success: function(data) {
-      console.log(data);
+    success: (data) => {
+      console.log('fetch worked', data);
+      data.results.forEach((message, index) => {
+        this.renderMessage(message);
+      });
     },
     error: function(data) {
       console.error('failed ', data);
@@ -49,7 +51,8 @@ app.renderMessage = function(message) {
   var $text = $('<p>' + message.text + '</p>');
   $tweet.append($username);
   $tweet.append($text);
-  $('#chats').append($tweet);
+  $('#chats').prepend($tweet);
+  $('.username').on('click', app.handleUsernameClick);
 };
 
 app.renderRoom = function(roomName) {
@@ -59,3 +62,15 @@ app.renderRoom = function(roomName) {
 app.handleUsernameClick = function() {
   $(this).addClass('friend');
 };
+
+app.handleSubmit = function() {
+  
+  var message = {};
+  message.username = /username=?[.]/.match(window.location.search).replace('username=', '');
+  message.text = $('.message').value;
+  message.roomname = $('#roomSelect').value;
+  $(this).send(message);
+};
+
+$('.send').on('click', app.handleSubmit);
+

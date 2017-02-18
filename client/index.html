@@ -26,9 +26,13 @@
   <body>
     <div id="main">
       <h1>chatterbox</h1>
-        <select id="roomSelect">
-          <option>new room</option>
-        </select>
+        <form id="send">
+          <div><input id="message" type="text" name="text"><button type="submit" class="submit">Send Message</button></div>
+          <select id="roomSelect">
+            <option value="new room">new room</option>
+          </select>
+
+        </form>
     </div>
     <div id="chats"></div>
   </body>
