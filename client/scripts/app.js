@@ -63,14 +63,15 @@ app.handleUsernameClick = function() {
   $(this).addClass('friend');
 };
 
-app.handleSubmit = function() {
-  
+app.handleSubmit = function(event) {
+  event.preventDefault();
   var message = {};
-  message.username = /username=?[.]/.match(window.location.search).replace('username=', '');
-  message.text = $('.message').value;
-  message.roomname = $('#roomSelect').value;
-  $(this).send(message);
+  message.text = $('#message').val;
+  message.roomname = $('#roomSelect').val;
+  this.send(message);
 };
 
-$('.send').on('click', app.handleSubmit);
+document.addEventListener('DOMContentLoaded', function() {
+  $('.submit').on('submit', app.handleSubmit.bind(app));
+});
 
