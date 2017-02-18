@@ -2,10 +2,19 @@
 //http://parse.sfm8.hackreactor.com/chatterbox/classes/messages
 
 const app = {
-  server: 'http://parse.sfm8.hackreactor.com/chatterbox/classes/messages'
+  server: 'http://parse.sfm8.hackreactor.com/chatterbox/classes/messages',
+  foundRooms: {},
+  params: {order: '-createdAt'}
 };
 
-app.init = function() {};
+app.init = function() {
+  this.fetch(this.params);
+  var urlParams = window.location.search.split('=');
+  window.username = urlParams[urlParams.length - 1];
+  setInterval(() => { this.fetch(this.params); }, 20000);
+  console.log(username);
+};
+
 
 app.send = function(message) {
   $.ajax({
@@ -14,6 +23,7 @@ app.send = function(message) {
     data: JSON.stringify(message),
     contentType: 'application/json',
     success: function(data) {
+      $('#chats').prepend(app.renderMessage(message));
       app.renderMessage(message);
       console.log('send worked', data);
     },
@@ -31,10 +41,11 @@ app.fetch = function(params) {
     data: params,
     success: (data) => {
       console.log('fetch worked', data);
+      this.clearMessages();
       data.results.forEach((message, index) => {
-        this.renderMessage(message);
-
+        $('#chats').append(this.renderMessage(message));
       });
+      this.roomPopulate(data);
     },
     error: function(data) {
       console.error('failed ', data);
@@ -57,12 +68,15 @@ app.renderMessage = function(message) {
   $text.append(document.createTextNode(message.text));
   $tweet.append($username);
   $tweet.append($text);
-  $('#chats').prepend($tweet);
   $('.username').on('click', app.handleUsernameClick);
+  
+  return $tweet;
 };
 
 app.renderRoom = function(roomName) {
-  $('#roomSelect').append('<option>' + roomName + '</option>');
+  var $option = $(`<option>${roomName}</option>`);
+  $option.attr('value', roomName);
+  $('#roomSelect').append($option);
 };
 
 app.handleUsernameClick = function() {
@@ -83,16 +97,35 @@ app.handleSubmit = function(event) {
   message.username = window.username;
   message.text = $('#message').val();
   message.roomname = $('#roomSelect').val();
-  console.log(message);
   this.send(message);
   return false;
 };
 
+app.roomPopulate = function(data) {
+  var messages = data.results;
+  messages.forEach((obj, i, collection) => {
+    if (this.foundRooms[obj.roomname] === undefined) {
+      this.foundRooms[obj.roomname] = obj.roomname;
+      this.renderRoom(obj.roomname);
+    }
+  });
+};
+
+app.selectRoom = function(roomname) {
+  this.params.where = '{"roomname": "' + roomname + '"}';
+  this.fetch(this.params);
+};
+
 document.addEventListener('DOMContentLoaded', function() {
   $('.submit').on('click', this.handleSubmit.bind(this));
-  this.fetch({order: '-createdAt'});
-  var urlParams = window.location.search.split('=');
-  window.username = urlParams[urlParams.length - 1];
-  console.log(username);
+  this.init();
+  $('.roomAdd').on('click', () => { 
+    var roomName = $('#room').val();
+    this.renderRoom(roomName);
+  });
+  $('#roomSelect').on('change', () => {
+    var roomName = $('#roomSelect').val();
+    this.selectRoom(roomName);
+  });
 }.bind(app));
 

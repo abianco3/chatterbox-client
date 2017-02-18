@@ -26,10 +26,11 @@
   <body>
     <div id="main">
       <h1>chatterbox</h1>
-        <form id="send">
-          <div><input id="message" type="text" name="text"><button type="submit" class="submit">Send Message</button></div>
+        <form>
+          <div id="send"><input id="message" type="text" name="text"><button type="submit" class="submit">Send Message</button></div>
+          <div><input type="text" id="room"><button type="button" class="roomAdd">New Room</button></div>
           <select id="roomSelect">
-            <option value="new room">new room</option>
+            <!-- <option value="lobby">lobby</option> -->
           </select>
 
         </form>
